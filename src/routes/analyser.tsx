@@ -28,7 +28,7 @@ export const Route = createFileRoute("/analyser")({
       },
     ],
   }),
-  component: Analyser;
+  component: Analyser,
 });
 
 const SUGGESTIONS = ["NVDA", "TSLA", "COIN", "PLTR", "MSTR"];
