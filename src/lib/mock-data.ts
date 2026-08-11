@@ -42,7 +42,7 @@ export const riskTrend: TrendPoint[] = (() => {
     for (const t of TRACKED_TICKERS) {
       const drift = (rand() - 0.44) * 6;
       base[t] = Math.min(96, Math.max(18, (base[t] ?? 50) + drift));
-      point[t] = Math.round(base[t] * 10) / 10;
+      point[t] = Math.round((base[t] ?? 50) * 10) / 10;
     }
     out.push(point as unknown as TrendPoint);
   }
