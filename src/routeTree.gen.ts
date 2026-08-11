@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AnalyserRouteImport } from './routes/analyser'
 import { Route as CopilotRouteImport } from './routes/copilot'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyserRoute = AnalyserRouteImport.update({
+  id: '/analyser',
+  path: '/analyser',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CopilotRoute = CopilotRouteImport.update({
@@ -25,27 +31,31 @@ const CopilotRoute = CopilotRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analyser': typeof AnalyserRoute
   '/copilot': typeof CopilotRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analyser': typeof AnalyserRoute
   '/copilot': typeof CopilotRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analyser': typeof AnalyserRoute
   '/copilot': typeof CopilotRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/copilot'
+  fullPaths: '/' | '/analyser' | '/copilot'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/copilot'
-  id: '__root__' | '/' | '/copilot'
+  to: '/' | '/analyser' | '/copilot'
+  id: '__root__' | '/' | '/analyser' | '/copilot'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalyserRoute: typeof AnalyserRoute
   CopilotRoute: typeof CopilotRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analyser': {
+      id: '/analyser'
+      path: '/analyser'
+      fullPath: '/analyser'
+      preLoaderRoute: typeof AnalyserRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/copilot': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalyserRoute: AnalyserRoute,
   CopilotRoute: CopilotRoute,
 }
 export const routeTree = rootRouteImport
