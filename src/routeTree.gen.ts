@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalyserRouteImport } from './routes/analyser'
 import { Route as CopilotRouteImport } from './routes/copilot'
+import { Route as LogsRouteImport } from './routes/logs'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const CopilotRoute = CopilotRouteImport.update({
   path: '/copilot',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LogsRoute = LogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analyser': typeof AnalyserRoute
   '/copilot': typeof CopilotRoute
+  '/logs': typeof LogsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analyser': typeof AnalyserRoute
   '/copilot': typeof CopilotRoute
+  '/logs': typeof LogsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analyser': typeof AnalyserRoute
   '/copilot': typeof CopilotRoute
+  '/logs': typeof LogsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analyser' | '/copilot'
+  fullPaths: '/' | '/analyser' | '/copilot' | '/logs'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analyser' | '/copilot'
-  id: '__root__' | '/' | '/analyser' | '/copilot'
+  to: '/' | '/analyser' | '/copilot' | '/logs'
+  id: '__root__' | '/' | '/analyser' | '/copilot' | '/logs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyserRoute: typeof AnalyserRoute
   CopilotRoute: typeof CopilotRoute
+  LogsRoute: typeof LogsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CopilotRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/logs': {
+      id: '/logs'
+      path: '/logs'
+      fullPath: '/logs'
+      preLoaderRoute: typeof LogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyserRoute: AnalyserRoute,
   CopilotRoute: CopilotRoute,
+  LogsRoute: LogsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
