@@ -41,7 +41,7 @@ export const riskTrend: TrendPoint[] = (() => {
     };
     for (const t of TRACKED_TICKERS) {
       const drift = (rand() - 0.44) * 6;
-      base[t] = Math.min(96, Math.max(18, base[t] + drift));
+      base[t] = Math.min(96, Math.max(18, (base[t] ?? 50) + drift));
       point[t] = Math.round(base[t] * 10) / 10;
     }
     out.push(point as unknown as TrendPoint);
@@ -136,7 +136,9 @@ export function mockAnalysis(tickerRaw: string): AnalyzeResponse {
   const pe = Math.round((28 + rand() * 90) * 10) / 10;
   const ps = Math.round((3 + rand() * 26) * 10) / 10;
   const de = Math.round((0.1 + rand() * 1.8) * 100) / 100;
-  const memory = HISTORICAL_MEMORY[Math.floor(rand() * HISTORICAL_MEMORY.length)];
+  const memory =
+    HISTORICAL_MEMORY[Math.floor(rand() * HISTORICAL_MEMORY.length)] ??
+    HISTORICAL_MEMORY[0]!;
   const score = Math.min(
     98,
     Math.round(pe * 0.45 + ps * 1.1 + de * 6 + rand() * 8),
