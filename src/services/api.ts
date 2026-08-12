@@ -92,6 +92,7 @@ async function request<T>(
   path: string,
   init: RequestInit,
   fallback: T,
+  normalize?: (raw: unknown) => T,
 ): Promise<ApiResult<T>> {
   try {
     const controller = new AbortController();
@@ -103,7 +104,14 @@ async function request<T>(
     });
     clearTimeout(timeout);
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-    return { data: (await res.json()) as T, source: "live" };
+    const text = await res.text();
+    let raw: unknown = text;
+    try {
+      raw = JSON.parse(text) as unknown;
+    } catch {
+      /* keep raw text — some backends return a plain string body */
+    }
+    return { data: normalize ? normalize(raw) : (raw as T), source: "live" };
   } catch (err) {
     return {
       data: fallback,
@@ -111,6 +119,50 @@ async function request<T>(
       error: err instanceof Error ? err.message : "Unknown error",
     };
   }
+}
+
+const TEXT_KEYS = ["markdown", "response", "answer", "content", "text", "output", "result"];
+
+/** Backends differ on field names — pull the first usable markdown/text field. */
+function normalizeScenario(query: string) {
+  return (raw: unknown): ScenarioResponse => {
+    if (typeof raw === "string" && raw.trim()) {
+      return { query, markdown: raw, model: "backend", latency_ms: 0 };
+    }
+    if (!raw || typeof raw !== "object") {
+      throw new Error("Scenario response was empty or not an object");
+    }
+    const obj = raw as Record<string, unknown>;
+    const nested =
+      obj["data"] && typeof obj["data"] === "object"
+        ? (obj["data"] as Record<string, unknown>)
+        : undefined;
+
+    let markdown: string | undefined;
+    for (const key of TEXT_KEYS) {
+      const value = obj[key] ?? nested?.[key];
+      if (typeof value === "string" && value.trim()) {
+        markdown = value;
+        break;
+      }
+    }
+    if (!markdown) {
+      throw new Error(
+        `Scenario response had no text field (got keys: ${Object.keys(obj).join(", ") || "none"})`,
+      );
+    }
+
+    const model = obj["model"] ?? nested?.["model"];
+    const latency = obj["latency_ms"] ?? nested?.["latency_ms"];
+    const echoedQuery = obj["query"] ?? nested?.["query"];
+
+    return {
+      query: typeof echoedQuery === "string" ? echoedQuery : query,
+      markdown,
+      model: typeof model === "string" ? model : "backend",
+      latency_ms: typeof latency === "number" ? latency : 0,
+    };
+  };
 }
 
 export const api = {
@@ -126,6 +178,7 @@ export const api = {
       "/api/scenario",
       { method: "POST", body: JSON.stringify({ query }) },
       mockScenario(query),
+      normalizeScenario(query),
     ),
 
   signals: () =>
