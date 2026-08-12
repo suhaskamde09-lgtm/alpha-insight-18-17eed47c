@@ -1,4 +1,4 @@
-# Fix: AI Copilot crashes when connected to the real backend
+- Fix: AI Copilot crashes when connected to the real backend
 
 ## What's happening
 
