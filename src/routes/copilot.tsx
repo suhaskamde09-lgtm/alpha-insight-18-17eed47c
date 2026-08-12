@@ -129,6 +129,18 @@ function Copilot() {
             )}
           </div>
 
+          {!loading && error && (
+            <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-flare-red/40 bg-flare-red/10 px-4 py-3">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-flare-red" />
+              <div className="text-xs">
+                <p className="font-semibold text-flare-red">
+                  Backend call failed — showing mock analysis
+                </p>
+                <p className="mt-1 font-mono text-muted-foreground">{error}</p>
+              </div>
+            </div>
+          )}
+
           {loading && <SkeletonResponse />}
 
           {!loading && !result && (
