@@ -24,7 +24,32 @@ export const Route = createFileRoute("/copilot")({
     ],
   }),
   component: Copilot,
+  errorComponent: CopilotError,
 });
+
+function CopilotError({ error, reset }: { error: Error; reset: () => void }) {
+  return (
+    <DashboardShell
+      title="AI Scenario Copilot"
+      subtitle="Something went wrong while rendering the copilot response."
+    >
+      <GlassCard tint="var(--flare-red)" className="p-6">
+        <div className="flex items-center gap-2 text-flare-red">
+          <AlertTriangle className="size-4" />
+          <h2 className="text-base font-semibold">Copilot render error</h2>
+        </div>
+        <p className="mt-3 font-mono text-xs text-muted-foreground">{error.message}</p>
+        <button
+          onClick={reset}
+          className="mt-5 flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-foreground/5"
+        >
+          <RotateCcw className="size-4" />
+          Try again
+        </button>
+      </GlassCard>
+    </DashboardShell>
+  );
+}
 
 const PRESETS = [
   "Fed holds rates above 5% through 2027 while AI capex decelerates",
@@ -37,13 +62,16 @@ function Copilot() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScenarioResponse | null>(null);
   const [live, setLive] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function run() {
     if (!query.trim() || loading) return;
     setLoading(true);
     setResult(null);
+    setError(null);
     const res = await api.scenario(query.trim());
     setLive(res.source === "live");
+    setError(res.error ?? null);
     setResult(res.data);
     setLoading(false);
   }
