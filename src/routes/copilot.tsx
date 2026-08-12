@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Bot, Sparkles, Zap } from "lucide-react";
+import { AlertTriangle, Bot, RotateCcw, Sparkles, Zap } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { GlassCard, StatusPill } from "@/components/dashboard/ui";
 import { api, type ScenarioResponse } from "@/services/api";
