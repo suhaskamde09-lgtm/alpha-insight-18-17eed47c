@@ -1,5 +1,12 @@
 /** Minimal, dependency-free markdown renderer for copilot responses. */
-export function Markdown({ content }: { content: string }) {
+export function Markdown({ content }: { content?: string | null }) {
+  if (typeof content !== "string" || !content.trim()) {
+    return (
+      <p className="my-2 text-sm text-muted-foreground">
+        No readable content was returned for this response.
+      </p>
+    );
+  }
   const lines = content.split("\n");
   const blocks: React.ReactNode[] = [];
   let list: string[] = [];
