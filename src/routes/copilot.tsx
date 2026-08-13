@@ -1,10 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { AlertTriangle, Bot, RotateCcw, Sparkles, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, Bot, History, RotateCcw, Sparkles, Zap } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { GlassCard, StatusPill } from "@/components/dashboard/ui";
 import { api, type ScenarioResponse } from "@/services/api";
 import { Markdown } from "@/components/dashboard/Markdown";
+import { CopilotHistory } from "@/components/dashboard/CopilotHistory";
+import {
+  appendHistory,
+  clearHistory,
+  readHistory,
+  removeHistory,
+  type CopilotHistoryEntry,
+} from "@/lib/copilot-history";
 
 export const Route = createFileRoute("/copilot")({
   head: () => ({
@@ -63,18 +71,87 @@ function Copilot() {
   const [result, setResult] = useState<ScenarioResponse | null>(null);
   const [live, setLive] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [entries, setEntries] = useState<CopilotHistoryEntry[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [confirmingClear, setConfirmingClear] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  useEffect(() => {
+    setEntries(readHistory());
+  }, []);
 
   async function run() {
     if (!query.trim() || loading) return;
     setLoading(true);
     setResult(null);
     setError(null);
+    setActiveId(null);
     const res = await api.scenario(query.trim());
-    setLive(res.source === "live");
+    const isLive = res.source === "live";
+    setLive(isLive);
     setError(res.error ?? null);
     setResult(res.data);
     setLoading(false);
+    const next = appendHistory({
+      query: query.trim(),
+      markdown: res.data.markdown ?? "",
+      model: res.data.model,
+      latency_ms: res.data.latency_ms,
+      live: isLive,
+    });
+    setEntries(next);
+    setActiveId(next[0]?.id ?? null);
   }
+
+  function selectEntry(entry: CopilotHistoryEntry) {
+    setActiveId(entry.id);
+    setQuery(entry.query);
+    setError(null);
+    setLive(entry.live);
+    setResult({
+      query: entry.query,
+      markdown: entry.markdown,
+      model: entry.model,
+      latency_ms: entry.latency_ms,
+    });
+    setHistoryOpen(false);
+  }
+
+  function newAnalysis() {
+    setQuery("");
+    setResult(null);
+    setError(null);
+    setActiveId(null);
+    setHistoryOpen(false);
+  }
+
+  function handleRemove(id: string) {
+    setEntries(removeHistory(id));
+    if (activeId === id) newAnalysis();
+  }
+
+  function handleClear() {
+    if (!confirmingClear) {
+      setConfirmingClear(true);
+      window.setTimeout(() => setConfirmingClear(false), 3000);
+      return;
+    }
+    setEntries(clearHistory());
+    setConfirmingClear(false);
+    newAnalysis();
+  }
+
+  const historyPanel = (
+    <CopilotHistory
+      entries={entries}
+      activeId={activeId}
+      onSelect={selectEntry}
+      onNew={newAnalysis}
+      onRemove={handleRemove}
+      onClear={handleClear}
+      confirmingClear={confirmingClear}
+    />
+  );
 
   return (
     <DashboardShell
@@ -82,8 +159,20 @@ function Copilot() {
       subtitle="Stress-test macro and geopolitical narratives against historical crash memory."
       actions={<StatusPill live={live} label={live ? "Groq live" : "Mock inference"} />}
     >
-      <div className="grid gap-4 lg:grid-cols-5">
-        <GlassCard tint="var(--flare-violet)" className="p-5 lg:col-span-2">
+      <div className="mb-4 lg:hidden">
+        <button
+          onClick={() => setHistoryOpen((v) => !v)}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-foreground/5"
+        >
+          <History className="size-4" />
+          {historyOpen ? "Hide history" : `History (${entries.length})`}
+        </button>
+        {historyOpen && <div className="mt-3">{historyPanel}</div>}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-12">
+        <GlassCard tint="var(--flare-violet)" className="p-5 lg:col-span-3">
+
           <div className="flex items-center gap-2">
             <Bot className="size-4 text-flare-violet" />
             <h2 className="text-base font-semibold">Scenario Input</h2>
@@ -116,7 +205,7 @@ function Copilot() {
           </button>
         </GlassCard>
 
-        <GlassCard tint="var(--flare-pink)" className="p-5 lg:col-span-3">
+        <GlassCard tint="var(--flare-pink)" className="p-5 lg:col-span-6">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="size-4 text-flare-pink" />
@@ -163,7 +252,10 @@ function Copilot() {
             </div>
           )}
         </GlassCard>
+
+        <div className="hidden lg:col-span-3 lg:block">{historyPanel}</div>
       </div>
+
     </DashboardShell>
   );
 }
