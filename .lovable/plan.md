@@ -9,7 +9,8 @@ Add a persistent history panel to the Copilot page so past scenario runs can be 
    - Newest first, capped at 50 entries so storage stays small.
    - Survives reloads; nothing is sent to a backend.
 
-2. **History sidebar on `/copilot`**
+2. **History sidebar on `/copilot`, docked right**
+   - The main navigation drawer stays on the left; every secondary panel like this one sits on the right edge so the layout stays balanced and readable.
    - A scrollable column listing past runs: truncated prompt, relative time ("2h ago"), and a small live/mock tag.
    - Clicking an entry restores that run's full report into the response panel (read-only recall, no re-fetch) and highlights it as active.
    - Empty state when there is no history yet.
