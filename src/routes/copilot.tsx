@@ -205,7 +205,7 @@ function Copilot() {
           </button>
         </GlassCard>
 
-        <GlassCard tint="var(--flare-pink)" className="p-5 lg:col-span-3">
+        <GlassCard tint="var(--flare-pink)" className="p-5 lg:col-span-6">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="size-4 text-flare-pink" />
@@ -252,7 +252,10 @@ function Copilot() {
             </div>
           )}
         </GlassCard>
+
+        <div className="hidden lg:col-span-3 lg:block">{historyPanel}</div>
       </div>
+
     </DashboardShell>
   );
 }
