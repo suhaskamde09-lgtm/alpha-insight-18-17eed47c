@@ -25,16 +25,20 @@ Add a persistent history panel to the Copilot page so past scenario runs can be 
 
 ## Layout
 
+Left = main app navigation (unchanged). Right = contextual panels.
+
 ```text
-+----------------+---------------------------+------------------+
-| Scenario Input | Copilot Response          | History          |
-| (presets, run) | (markdown report)         | [+ New Analysis] |
-|                |                           | - prompt 1  live |
-|                |                           | - prompt 2  mock |
-|                |                           | [Clear history]  |
-+----------------+---------------------------+------------------+
++------+----------------+-------------------+------------------+
+| Main | Scenario Input | Copilot Response  | History (right)  |
+| Nav  | (presets, run) | (markdown report) | [+ New Analysis] |
+| left |                |                   | - prompt 1  live |
+|      |                |                   | - prompt 2  mock |
+|      |                |                   | [Clear history]  |
++------+----------------+-------------------+------------------+
 ```
-Grid becomes 12 columns on large screens (input 3 / response 6 / history 3), stacking on smaller widths.
+Grid becomes 12 columns on large screens (input 3 / response 6 / history 3, history last in DOM order so it renders on the right), stacking on smaller widths.
+
+Same rule applied elsewhere: any secondary/contextual panel on the other pages (for example filter or detail panels) is placed on the right side rather than beside the left nav, so the left edge only ever holds the main sidebar.
 
 ## Technical notes
 
