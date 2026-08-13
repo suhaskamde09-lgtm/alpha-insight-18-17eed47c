@@ -70,7 +70,7 @@ export interface HealthResponse {
 }
 
 const BASE_URL_KEY = "risk_api_base_url";
-export const DEFAULT_BASE_URL = "http://localhost:8000";
+export const DEFAULT_BASE_URL = "https://turbo-capybara-96644j94xvp7277px-8000.app.github.dev/";
 
 export function getBaseUrl(): string {
   if (typeof window === "undefined") return DEFAULT_BASE_URL;
@@ -126,18 +126,26 @@ const TEXT_KEYS = ["markdown", "response", "answer", "content", "text", "output"
 /** Backends differ on field names — pull the first usable markdown/text field. */
 function normalizeScenario(query: string) {
   return (raw: unknown): ScenarioResponse => {
+    // Handle plain string responses directly
     if (typeof raw === "string" && raw.trim()) {
       return { query, markdown: raw, model: "backend", latency_ms: 0 };
     }
+
+    // Ensure we have an object to work with
     if (!raw || typeof raw !== "object") {
+      console.warn("Scenario response was not an object", raw);
       throw new Error("Scenario response was empty or not an object");
     }
+
     const obj = raw as Record<string, unknown>;
+
+    // Check for nested data wrapper (common in some backends)
     const nested =
       obj["data"] && typeof obj["data"] === "object"
         ? (obj["data"] as Record<string, unknown>)
         : undefined;
 
+    // Find the first available text field
     let markdown: string | undefined;
     for (const key of TEXT_KEYS) {
       const value = obj[key] ?? nested?.[key];
@@ -146,9 +154,31 @@ function normalizeScenario(query: string) {
         break;
       }
     }
+
+    // If no standard text field found, try any string value as fallback
     if (!markdown) {
+      for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === "string" && value.trim() && key !== "model" && key !== "query") {
+          markdown = value;
+          break;
+        }
+      }
+      // Also check nested object
+      if (!markdown && nested) {
+        for (const [key, value] of Object.entries(nested)) {
+          if (typeof value === "string" && value.trim() && key !== "model" && key !== "query") {
+            markdown = value;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!markdown) {
+      const keys = Object.keys(obj).join(", ") || "none";
+      console.error("Could not find text field in scenario response", { obj, keys });
       throw new Error(
-        `Scenario response had no text field (got keys: ${Object.keys(obj).join(", ") || "none"})`,
+        `Scenario response had no text field (got keys: ${keys})`,
       );
     }
 
