@@ -1,10 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { AlertTriangle, Bot, RotateCcw, Sparkles, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, Bot, History, RotateCcw, Sparkles, Zap } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { GlassCard, StatusPill } from "@/components/dashboard/ui";
 import { api, type ScenarioResponse } from "@/services/api";
 import { Markdown } from "@/components/dashboard/Markdown";
+import { CopilotHistory } from "@/components/dashboard/CopilotHistory";
+import {
+  appendHistory,
+  clearHistory,
+  readHistory,
+  removeHistory,
+  type CopilotHistoryEntry,
+} from "@/lib/copilot-history";
 
 export const Route = createFileRoute("/copilot")({
   head: () => ({
