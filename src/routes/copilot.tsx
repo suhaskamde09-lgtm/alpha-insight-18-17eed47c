@@ -4,8 +4,8 @@ import { AlertTriangle, Bot, History, RotateCcw, Sparkles, Zap } from "lucide-re
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { GlassCard, StatusPill } from "@/components/dashboard/ui";
 import { api, type ScenarioResponse } from "@/services/api";
-import { Markdown } from "@/components/dashboard/Markdown";
 import { CopilotHistory } from "@/components/dashboard/CopilotHistory";
+import { CopilotResponseCard } from "@/components/CopilotResponseCard";
 import {
   appendHistory,
   clearHistory,
@@ -219,13 +219,13 @@ function Copilot() {
           </div>
 
           {!loading && error && (
-            <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-flare-red/40 bg-flare-red/10 px-4 py-3">
-              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-flare-red" />
-              <div className="text-xs">
-                <p className="font-semibold text-flare-red">
-                  Backend call failed — showing mock analysis
+            <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2">
+              <AlertTriangle className="mt-0.5 size-3 shrink-0 text-amber-500" />
+              <div className="text-[10px]">
+                <p className="font-medium text-amber-600">
+                  Backend unreachable — using mock data
                 </p>
-                <p className="mt-1 font-mono text-muted-foreground">{error}</p>
+                <p className="mt-0.5 font-mono text-muted-foreground opacity-60">{error}</p>
               </div>
             </div>
           )}
@@ -248,7 +248,7 @@ function Copilot() {
 
           {!loading && result && (
             <div className="mt-4">
-              <Markdown content={result.markdown} />
+              <CopilotResponseCard data={result} />
             </div>
           )}
         </GlassCard>
